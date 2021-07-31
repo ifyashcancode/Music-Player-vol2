@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg" href="spotify-brands.svg" />
+		<title>Music Player by Thapa Technical vol1</title>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+			referrerpolicy="no-referrer"
+		/>
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Jost:wght@100;300;400;500;600&display=swap');
+			*,
+			*::before,
+			*::after {
+				box-sizing: border-box;
+				padding: 0;
+				margin: 0;
+			}
+			html {
+				font-size: 62.5%;
+				font-family: 'Jost', sans-serif;
+			}
+			img {
+				width: inherit;
+				height: inherit;
+				object-fit: cover;
+				border-radius: inherit;
+			}
+			body {
+				min-height: 100vh;
+				width: 100vw;
+				display: grid;
+				place-items: center;
+			}
+			#title {
+				color: #171717;
+				text-transform: uppercase;
+				font-size: 2.5rem;
+				font-weight: bold;
+				letter-spacing: 0.2rem;
+				word-spacing: 0.5rem;
+				font-weight: 500;
+				text-shadow: 0 0.3rem 0.5rem rgba(0, 0, 0, 0.3);
+			}
+			#artist {
+				color: #cccaca;
+				text-transform: capitalize;
+				font-size: 2rem;
+				font-weight: 300;
+				transform: translateY(-1rem);
+			}
+			.music_container {
+				width: 35rem;
+				height: 55rem;
+				background-color: #ffff;
+				border-radius: 2rem;
+				box-shadow: 0 5px 10px 4px rgba(0, 0, 0, 0.5);
+				padding: 3rem;
+				/* 👇  just to be sure */
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: space-around;
+			}
+			.img_container {
+				width: 26.5rem;
+				height: 26.5rem;
+				border-radius: 50%;
+				box-shadow: 0 5px 10px 4px rgba(0, 0, 0, 0.5);
+				margin: 1rem 0;
+				transform: translateY(-1rem);
+			}
+			.music_controls {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: space-around;
+				/* ☝️ Just to be sure with the alignment */
+			}
+			.music_controls button {
+				padding: 10px;
+				margin: 0px 20px;
+				border: none;
+				/* 👇 Seems important */
+				background-color: transparent;
+				color: #000;
+				cursor: pointer;
+				font-size: 2rem;
+			}
+			.music_container button #play {
+				width: 5rem;
+				height: 5rem;
+				display: grid;
+				place-items: center;
+				border-radius: 50%;
+				background-color: #171717;
+				color: #ffff;
+			}
+			button:hover {
+				color: grey;
+			}
+			.music_container button #play:hover {
+				color: #171717;
+				background-color: #ffff;
+				box-shadow: 0 1rem 2rem 0.2rem rgba(0, 0, 0, 0.5);
+			}
+			#cover {
+				animation: rotate 3s linear infinite;
+				animation-play-state: paused;
+			}
+
+			@keyframes rotate {
+				from {
+					transform: rotate(0deg);
+				}
+				to {
+					transform: rotate(360deg);
+				}
+			}
+			/* progress style */
+			.progress_container {
+				width: 100%;
+				height: auto;
+				padding: 1rem;
+				font-weight: bold;
+			}
+			.progress_duration {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+			.progress_div {
+				box-shadow: 0 0.3rem 1.8rem rgba(0, 0, 0, 0.5);
+				height: 0.4rem;
+				cursor: pointer;
+				transition: all 1s linear;
+				border-radius: 15px;
+			}
+			.progress {
+				width: 0%;
+				height: inherit;
+				background-color: #171717;
+				border-radius: inherit;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="main_div">
+			<div class="music_container">
+				<h2 id="title">Sugar Crash</h2>
+				<h3 id="artist">Elytto</h3>
+				<div class="img_container">
+					<img id="cover" src="music/sugarcrash.jpg" alt="music cover" />
+				</div>
+				<audio src="music/sugarcrash.mp3"></audio>
+				<!-- progress bar -->
+				<div class="progress_container" id="progress_container">
+					<div class="progress_duration">
+						<div id="current_time">0:00</div>
+						<div id="total_duration">0:00</div>
+					</div>
+					<div class="progress_div" id="progress_div">
+						<div class="progress" id="progress"></div>
+					</div>
+				</div>
+				<!-- controls -->
+				<div class="music_controls">
+					<button>
+						<i class="fas fa-backward" id="prev" title="previous song"></i>
+					</button>
+					<button>
+						<i class="fas fa-play" id="play" title="play song"></i>
+					</button>
+					<button>
+						<i class="fas fa-forward" id="next" title="next song"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+		<script>
+			const audio = document.querySelector('audio');
+			const playBtn = document.querySelector('#play');
+			const cover = document.querySelector('#cover');
+
+			const title = document.querySelector('#title');
+			const artist = document.querySelector('#artist');
+			const prevBtn = document.querySelector('#prev');
+			const nextBtn = document.querySelector('#next');
+
+			const progressBar = document.querySelector('#progress');
+			const progressDiv = document.querySelector('#progress_div');
+			const currentTime_div = document.querySelector('#current_time');
+			const totalDuration_div = document.querySelector('#total_duration');
+			// reload
+			window.onbeforeunload = function () {
+				return 'Data will be lost if you leave the page, are you sure?';
+			};
+
+			// Next and Prev
+			const songs = [
+				{
+					name: 'sugarcrash',
+					title: 'Sugar Crash',
+					artist: 'Elytto',
+				},
+				{
+					name: 'onmyway',
+					title: 'On My Way',
+					artist: 'Alan Walker',
+				},
+				{
+					name: 'runaway',
+					title: 'Runaway',
+					artist: 'Aurora',
+				},
+			];
+
+			const loadSong = (songs) => {
+				title.innerHTML = songs.title;
+				artist.innerHTML = songs.artist;
+				audio.src = `music/${songs.name}.mp3`;
+				cover.src = `music/${songs.name}.jpg`;
+			};
+
+			let songIndex = 0;
+
+			loadSong(songs[songIndex]);
+
+			// play/pause song event & fucntion.
+			let isPlaying = false;
+
+			const playMusic = () => {
+				audio.play();
+				playBtn.classList.replace('fa-play', 'fa-pause');
+				cover.style.animationPlayState = 'running';
+				isPlaying = true;
+			};
+			const pauseMusic = () => {
+				audio.pause();
+				playBtn.classList.replace('fa-pause', 'fa-play');
+				cover.style.animationPlayState = 'paused';
+				isPlaying = false;
+			};
+			playBtn.addEventListener('click', () => {
+				isPlaying ? pauseMusic() : playMusic();
+			});
+
+			// next song event & function.
+			const nextSong = () => {
+				songIndex++;
+				if (songIndex > songs.length - 1) {
+					songIndex = 0;
+				}
+				loadSong(songs[songIndex]);
+				playMusic();
+			};
+			const prevSong = () => {
+				songIndex--;
+				if (songIndex < 0) {
+					songIndex = songs.length - 1;
+				}
+				loadSong(songs[songIndex]);
+				playMusic();
+			};
+			nextBtn.addEventListener('click', nextSong);
+			prevBtn.addEventListener('click', prevSong);
+
+			// most important - to start next song on song end.
+			audio.addEventListener('ended', nextSong);
+
+			// progress event and function
+			// show progress
+			audio.addEventListener('timeupdate', (event) => {
+				// console.log(event);
+
+				let currentTime = event.srcElement.currentTime;
+				let totalDuration = event.srcElement.duration;
+				let progress = (currentTime / totalDuration) * 100;
+				progressBar.style.width = `${progress}%`;
+
+				// ⏲️ duration update
+				if (totalDuration) {
+					totalDuration_div.innerHTML = `${Math.floor(
+						totalDuration / 60
+					)}:${Math.floor(totalDuration % 60)}`;
+				}
+
+				currentTime_div.innerHTML = `${Math.floor(currentTime / 60)}:${
+					currentTime % 60 < 10
+						? '0' + Math.floor(currentTime % 60)
+						: Math.floor(currentTime % 60)
+				}`;
+				// ☝️🤣 It is very hardcoded but it is..
+			});
+
+			// set progress
+			progressDiv.addEventListener('click', (event) => {
+				console.log(event);
+				const { duration } = audio;
+				// Object destructuring.
+				// same as writing const audioduration = audio.duration;
+				let moveProgress =
+					(event.offsetX / event.srcElement.clientWidth) * duration;
+				audio.currentTime = moveProgress;
+
+			});
+		</script>
+	</body>
+</html>
